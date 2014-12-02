@@ -148,6 +148,12 @@ class Client {
           break;
       }
     }
+
+    // Handle null token
+    if (!is_array($token) || (count($token) < 1)) {
+      return null;
+    }
+
     $token['expiration_time'] = REQUEST_TIME + $token['expires_in'];
 
     // Store the token (on session as well).

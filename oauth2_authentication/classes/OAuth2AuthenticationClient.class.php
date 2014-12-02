@@ -47,6 +47,14 @@ class OAuth2AuthenticationClient {
       $this->password = time() . '';
   }
 
+  public function getUser() {
+    return $this->username;
+  }
+
+  public function getPass() {
+    return $this->password;
+  }
+
   /**
    * Determines if a user with a provided name and password exists remotely.
    *
@@ -66,7 +74,6 @@ class OAuth2AuthenticationClient {
    *   TRUE if an access token was retrieved; FALSE otherwise.
    */
   public function getAccessToken() {
-
     // Configure the OAuth2 client.
     $oauth2_config = array(
       'auth_flow'      => 'user-password',
@@ -98,7 +105,11 @@ class OAuth2AuthenticationClient {
     ));
 
     // Return the result.
-    return $token;
+    if ($token_retrieved) {
+      return $token;
+    } else {
+      return false;
+    }
   }
 
   /**

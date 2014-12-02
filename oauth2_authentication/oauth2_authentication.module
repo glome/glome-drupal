@@ -232,19 +232,16 @@ function oauth2_authentication_login_authenticate_validate($form, &$form_state) 
  *   The user's uid on success, or FALSE on failure to authenticate.
  */
 function oauth2_authentication_authenticate($name = null, $password = null) {
-
   // Assume the user is invalid until we determine otherwise.
   $uid = FALSE;
 
   // Only check for a valid user if the username & password were set.
   if (($name != null) && ($password != null)) {
-
     // Attempt to load a local user with that name.
     $account = user_load_by_name($name);
 
     // If the load was successful, we can see if the entered password is valid.
     if ($account) {
-
       // Allow alternate password hashing schemes in checking the password.
       require_once DRUPAL_ROOT . '/' . variable_get('password_inc', 'includes/password.inc');
       if (user_check_password($password, $account)) {
@@ -264,36 +261,38 @@ function oauth2_authentication_authenticate($name = null, $password = null) {
         $client->getAccessToken();
       }
     }
-
-
-    else /* there is no local user account */ {
-
+    // there is no local user account
+    else {
       // Instantiate an OAuth2 Authentication class with the credentials.
       $client = new OAuth2AuthenticationClient($name, $password);
 
       // Check if the user exists remotely.
       if ($client->userExistsRemotely()) {
-
         // We're dealing with a valid remote user so create it locally.
         $uid = $client->createUserLocally()->uid;
       }
+
+      // Also, get an access token
+      $client->getAccessToken();
     }
+  } else {
+    // Create a new Drupal user
+    $client = new OAuth2AuthenticationClient(null, null);
+    $client->getAccessToken();
+    $client->setRandUser();
+    $uid = $client->createUserLocally()->uid;
+
+    // Login Drupal user
+    $uid = user_authenticate($client->getUser(), $client->getPass());
+    $user_obj = user_load($uid);
+    $form_state = array();
+    $form_state['uid'] = $user_obj->uid;
+    user_login_submit(array(), $form_state);
   }
-    else {
-        $client = new OAuth2AuthenticationClient(null, null);
-        $client->getAccessToken();
-        $client->setRandUser();
-        $uid = $client->createUserLocally()->uid;
-        global $user;
-        $user = user_load($uid);
-
-
-    }
 
   // Return the user's local ID if there is one.
   return $uid;
 }
-
 
 /**
  * Implements hook_block_info().
