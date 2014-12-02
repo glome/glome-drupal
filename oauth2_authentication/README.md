@@ -1,6 +1,6 @@
 Glome OAuth2 Connector.
 
-Required parameters
+Required parameters:
 Token endpoint http://glome_oauth2_middleware/app.php/oauth/v2/token
 Client id
 Client secret
